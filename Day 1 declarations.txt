@@ -1,0 +1,40 @@
+REPORT zbharath_oops1.
+
+CLASS classname DEFINITION.
+  PUBLIC SECTION.
+    METHODS: init,
+      setdata,
+      printdata.
+  PRIVATE SECTION.
+    CLASS-DATA: name(20) TYPE c,
+                dob      TYPE dats,
+                age      TYPE i,
+                sex      TYPE c.
+ENDCLASS.
+
+
+CLASS classname IMPLEMENTATION.
+  METHOD init.
+  ENDMETHOD.
+
+  METHOD setdata.
+    name  = 'bharath'.
+    dob   = '20200517'.
+    age   = 25.
+    sex   = 'M'.
+  ENDMETHOD.
+
+  METHOD printdata.
+    WRITE: /, name,age,dob,sex.
+  ENDMETHOD.
+
+ENDCLASS.
+
+DATA object TYPE REF TO classname.
+
+START-OF-SELECTION.
+  CREATE OBJECT object.
+
+  CALL METHOD object->init.
+  CALL METHOD object->setdata.
+  CALL METHOD object->printdata.
