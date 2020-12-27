@@ -1,0 +1,58 @@
+REPORT zbharath_oops2.
+
+CLASS employee DEFINITION.
+  PUBLIC SECTION.
+    METHODS: setemp IMPORTING i_empnum  TYPE i                  " these are mandatory by calling pass them
+                              i_empname TYPE c OPTIONAL         " optional was not required
+                              i_empdes  TYPE c  DEFAULT 'BOSS', " default value
+      getemp.
+  PROTECTED SECTION.
+    DATA: empno       TYPE i,
+          empname(20) TYPE c,
+          empdes(20)  TYPE c.
+ENDCLASS.
+
+
+CLASS employee IMPLEMENTATION.
+  METHOD setemp.
+    empno   = i_empnum.
+    empname = i_empname.
+    empdes   = i_empdes.
+  ENDMETHOD.
+
+  METHOD getemp.
+    WRITE: /,empname,empno,empdes.
+  ENDMETHOD.
+ENDCLASS.
+
+
+START-OF-SELECTION.
+  DATA object TYPE REF TO employee.
+  CREATE OBJECT object.
+
+  PARAMETERS: p_empnum     TYPE i,
+              p_ename(20)  TYPE c,
+              p_empdes(10) TYPE c.
+
+  CALL METHOD object->setemp    " not passing optional parameter
+    EXPORTING
+      i_empnum = p_empnum.
+
+  CALL METHOD object->getemp.
+
+  ULINE.
+  CALL METHOD object->setemp    " passing optional parameter
+    EXPORTING
+      i_empnum  = p_empnum
+      i_empname = p_ename.
+
+  CALL METHOD object->getemp.
+
+  ULINE.
+  CALL METHOD object->setemp    " passing optional parameter, and changing the default value
+    EXPORTING
+      i_empnum  = p_empnum
+      i_empname = p_ename
+      i_empdes  = p_empdes.
+
+  CALL METHOD object->getemp.
