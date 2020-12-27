@@ -1,0 +1,103 @@
+REPORT zbharath_oops3.
+
+" in abap we can return any number of values.
+CLASS customer  DEFINITION.
+  PUBLIC SECTION.
+    METHODS getdata IMPORTING i_kunnr TYPE  kna1-kunnr
+                    EXPORTING e_name1 TYPE  kna1-name1
+                              e_ort01 TYPE  kna1-ort01
+*                             e_sales type  tabletype. " create structure in se11 use
+*                                                        it to define table type in se11
+*                                                        refer it here which can hold
+*                                                        multile values.
+                              e_sales TYPE  zvbak2.    " used custom table type created
+*                                                        in se11
+
+ENDCLASS.
+
+CLASS customer  IMPLEMENTATION.
+  METHOD getdata.
+    SELECT SINGLE name1 ort01
+      FROM kna1
+      INTO (e_name1, e_ort01)
+      WHERE kunnr = i_kunnr.
+
+    IF sy-subrc = 0.
+      SELECT vbeln
+             erdat
+             erzet
+             ernam
+        FROM vbak
+        INTO CORRESPONDING FIELDS OF  TABLE  e_sales
+        WHERE kunnr = i_kunnr.
+      IF sy-subrc  = 0.
+        MESSAGE  'Customer found' TYPE 'I'.
+      ELSE.
+        MESSAGE  'Customer not found' TYPE 'I'.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+ENDCLASS.
+
+
+START-OF-SELECTION.
+  DATA object TYPE REF TO customer.
+  CREATE OBJECT object.
+
+  PARAMETERS  p_kunnr TYPE  kna1-kunnr.
+
+  WRITE: /,'Test case1' COLOR 3.
+
+  CALL METHOD object->getdata
+    EXPORTING
+      i_kunnr = p_kunnr.
+
+  ULINE.
+  WRITE: /,'Test case2' COLOR 3.
+
+  DATA object2 TYPE REF TO customer.
+  CREATE OBJECT object2.
+  DATA: v_name1 TYPE kna1-name1,
+        v_ort01 TYPE kna1-ort01.
+
+  CALL METHOD object2->getdata
+    EXPORTING
+      i_kunnr = p_kunnr
+    IMPORTING
+      e_name1 = v_name1
+      e_ort01 = v_ort01.
+
+  WRITE: /,'Customer name:',v_name1,
+           'Customer city:',v_ort01.
+
+  ULINE.
+  WRITE: /,'Test case3' COLOR 3.
+
+  DATA object3 TYPE REF TO customer.
+  CREATE OBJECT object3.
+
+  CLEAR: v_name1,v_ort01.
+  DATA:  it_vbak TYPE  TABLE OF vbak,
+         wa_vbak TYPE  vbak.
+
+  CALL METHOD object3->getdata
+    EXPORTING
+      i_kunnr = p_kunnr
+    IMPORTING
+      e_name1 = v_name1
+      e_ort01 = v_ort01
+      e_sales = it_vbak.
+
+  WRITE: /,'Customer name:',v_name1,
+           'Customer city:',v_ort01.
+
+  IF it_vbak  IS NOT  INITIAL.
+    DESCRIBE TABLE  it_vbak.
+    WRITE: /,'number of sales order are: ',sy-tfill.
+    LOOP AT it_vbak INTO  wa_vbak.
+      WRITE: /,wa_vbak-vbeln,
+               wa_vbak-erdat,
+               wa_vbak-erzet,
+               wa_vbak-ernam.
+    ENDLOOP.
+  ENDIF.
